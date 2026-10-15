@@ -114,7 +114,7 @@ else if(cat==='Bangles'){for(let k=0;k<4;k++)s+=`<ellipse cx="${250+k*28}" cy="3
 else {s+=`<path d="M170 90 Q300 340 430 90" fill="none" stroke="${g}" stroke-width="3" stroke-dasharray="3 9" stroke-linecap="round"/><path d="M300 275 l22 30 -22 30 -22-30z" fill="${g2}" stroke="${g}" stroke-width="3"/><circle cx="300" cy="360" r="20" fill="#1c1c1c" stroke="${g}" stroke-width="4"/><circle cx="300" cy="420" r="16" fill="${g}"/>`}
 const svg=`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 600"><defs><radialGradient id="b" cx=".5" cy=".4" r=".8"><stop offset="0" stop-color="#7a3d22"/><stop offset="1" stop-color="#2a140b"/></radialGradient></defs><rect width="600" height="600" fill="url(#b)"/>${s}</svg>`;
 return 'data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svg)}
-const MATS=['Gold','Diamond','Kundan','Pearl'],OCCS=['Daily wear','Wedding','Party','Festive'];
+const MATS=['Gold','Diamond','Kundan','Pearl','Handmade Artificial Jewe'],OCCS=['Daily wear','Wedding','Party','Festive'];
 function seedProducts(){const L=[
 ['Gold Traditional Necklace','Necklaces',48999,62999,4.8,124,'Gold','Wedding',38,'22K gold'],['Diamond Necklace','Necklaces',67999,79999,4.9,98,'Diamond','Party',24,'18K gold, VS diamonds'],
 ['Pearl Necklace','Necklaces',34999,42999,4.6,72,'Pearl','Festive',30,'Freshwater pearls'],['Kundan Necklace','Necklaces',42999,52999,4.7,64,'Kundan','Wedding',41,'Kundan, 22K gold plated'],
