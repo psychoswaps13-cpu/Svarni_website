@@ -280,7 +280,13 @@ const ADMIN = {
     await dbPut('orders', o.id, o);
     return { order: o };
   },
-  async deleteReview(b) { await dbDel('reviews', str(b.id, 40)); return { ok: true }; }
+    async deleteOrder(b) {
+    const id = str(b.id, 30);
+    if (!(await dbGet('orders', id))) throw new Fail('Order not found', 404);
+    await dbDel('orders', id);
+    return { ok: true };
+  },
+async deleteReview(b) { await dbDel('reviews', str(b.id, 40)); return { ok: true }; }
 };
 
 /* ---------- Entry point ---------- */
