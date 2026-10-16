@@ -8,6 +8,7 @@ const SECRET = process.env.SESSION_SECRET || '';
 const BUCKET = 'product-images';
 
 const DEFAULT_CATS = ['Necklaces', 'Earrings', 'Rings', 'Bangles', 'Mangalsutra', 'Bridal'];
+const DEFAULT_MATS = ['Gold', 'Diamond', 'Kundan', 'Pearl'];
 const DEFAULT_SHOP = {
   upi: 'YOUR_UPI_ID', name: 'Swarni Jewellery', wa: '910000000000',
   freeShip: true, freeAbove: 999, shipFee: 99,
@@ -77,6 +78,7 @@ const publicUser = (u) => ({ id: u.id, name: u.name, email: u.email, addr: u.add
 
 async function getShop() { const s = await dbGet('config', 'shop'); return Object.assign({}, DEFAULT_SHOP, s || {}); }
 async function getCats() { const c = await dbGet('config', 'cats'); return c && Array.isArray(c.list) ? c.list : DEFAULT_CATS; }
+async function getMats() { const c = await dbGet('config', 'materials'); return c && Array.isArray(c.list) ? c.list : DEFAULT_MATS; }
 async function getCatImg() { const c = await dbGet('config', 'catimg'); return c && c.map ? c.map : {}; }
 
 async function uploadImage(dataUrl) {
@@ -130,12 +132,12 @@ function computeTotals(items, products, shop, coupon) {
 /* ---------- Actions ---------- */
 const PUBLIC = {
   async public() {
-    const [products, cats, catimg, shop, reviews] = await Promise.all([
-      dbList('products'), getCats(), getCatImg(), getShop(), dbList('reviews')
+    const [products, cats, catimg, shop, reviews, materials] = await Promise.all([
+      dbList('products'), getCats(), getCatImg(), getShop(), dbList('reviews'), getMats()
     ]);
     const rv = {};
     reviews.forEach((r) => { (rv[r.pid] = rv[r.pid] || []).push({ id: r.id, n: r.n, r: r.r, t: r.t }); });
-    return { products, cats, catimg, shop, reviews: rv };
+    return { products, cats, catimg, shop, reviews: rv, materials };
   },
   async register(b) {
     const name = str(b.name, 80) || 'Customer', email = str(b.email, 120).toLowerCase(), pw = String(b.password || '');
@@ -260,6 +262,16 @@ const ADMIN = {
     await dbPut('config', 'catimg', { map });
     return { cats, catimg: map };
   },
+  async saveMaterials(b) {
+    const list = (Array.isArray(b.list) ? b.list : []).map((c) => str(c, 40)).filter(Boolean).slice(0, 40);
+    if (!list.length) throw new Fail('Keep at least one material');
+    if (b.rename && b.rename.from && b.rename.to) {
+      const ps = await dbList('products');
+      for (const p of ps) if (p.material === b.rename.from) { p.material = str(b.rename.to, 40); await dbPut('products', p.id, p); }
+    }
+    await dbPut('config', 'materials', { list });
+    return { list };
+  },
   async saveShop(b) {
     const s = b.shop || {}; const cur = await getShop();
     const url = (v) => { v = str(v, 300); return v && !/^https?:\/\//i.test(v) ? 'https://' + v : v; };
@@ -280,13 +292,13 @@ const ADMIN = {
     await dbPut('orders', o.id, o);
     return { order: o };
   },
-    async deleteOrder(b) {
+  async deleteOrder(b) {
     const id = str(b.id, 30);
     if (!(await dbGet('orders', id))) throw new Fail('Order not found', 404);
     await dbDel('orders', id);
     return { ok: true };
   },
-async deleteReview(b) { await dbDel('reviews', str(b.id, 40)); return { ok: true }; }
+  async deleteReview(b) { await dbDel('reviews', str(b.id, 40)); return { ok: true }; }
 };
 
 /* ---------- Entry point ---------- */
